@@ -7,6 +7,11 @@ import (
 
 var maxWidth int = 30
 
+type TileSide struct {
+	Direction   string
+	Description string
+}
+
 type Tile struct {
 	North       string
 	East        string
@@ -82,6 +87,7 @@ func pprintTile(tile Tile) {
 	fmt.Printf("|%v%v%v|\n", bottomSpaces, tile.South, bottomSpaces)
 	fmt.Printf("%v\n", strings.Repeat("-", maxWidth))
 }
+
 func rotateTile(tile Tile) Tile {
 	newTile := Tile{
 		North: tile.West,
@@ -92,8 +98,36 @@ func rotateTile(tile Tile) Tile {
 	return newTile
 }
 
+func splitTileSide(side string) TileSide {
+	tileSide := TileSide{
+		Direction:   side[0:1],
+		Description: side[1:],
+	}
+	return tileSide
+}
+
+func checkForMatch(currentTileSide string, testTileSide string) bool {
+	current := splitTileSide(currentTileSide)
+	test := splitTileSide(testTileSide)
+
+	fmt.Println(currentTileSide, testTileSide)
+
+	// could do this with ORs and probably other ways, but again, this is easiest for now.
+	if current.Description == test.Description {
+		if current.Direction == "R" && test.Direction == "L" {
+			return true
+		} else if current.Direction == "L" && test.Direction == "R" {
+			return true
+		}
+	}
+
+	return false
+}
+
 func main() {
 	pprintTile(tiles[0])
 	t := rotateTile(tiles[0])
 	pprintTile(t)
+
+	fmt.Println(checkForMatch(tiles[0].North, tiles[1].East))
 }
