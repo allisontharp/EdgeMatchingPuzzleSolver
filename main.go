@@ -171,17 +171,14 @@ func checkForTileMatch(currentTile Tile, tileNumber int, tileArray []Tile, rotat
 	}
 
 	sidesToMatch := sidesToMatchArray[tileNumber]
-	if tileNumber == 3 {
-		fmt.Println(sidesToMatch)
-	}
 
 	tile := structs.Map(currentTile)
 
 	isTileMatch := true
-
 	fmt.Println(sidesToMatch)
 	for _, sideToMatch := range sidesToMatch {
 		currentTileSide := fmt.Sprintf("%v", tile[sideToMatch.sideToMatchOnTile])
+
 		testTile := structs.Map(tileArray[sideToMatch.tileToMatch])
 		testTileSide := fmt.Sprintf("%v", testTile[sideToMatch.sideToMatchOnMatchedTile])
 
@@ -191,20 +188,36 @@ func checkForTileMatch(currentTile Tile, tileNumber int, tileArray []Tile, rotat
 
 	if !isTileMatch {
 		currentTile = rotateTile(currentTile)
-		checkForTileMatch(currentTile, tileNumber, tileArray, rotationNumber+1)
+		currentTileOut, err := checkForTileMatch(currentTile, tileNumber, tileArray, rotationNumber+1)
+		if err == nil {
+			return currentTileOut, nil
+		}
 	} else {
 		return currentTile, nil
 	}
 
-	return currentTile, errors.New("Invalid Tile")
+	return currentTile, errors.New("Tile does not work")
 }
 
 func removeTile(tiles []Tile, index int) []Tile {
 	return append(tiles[:index], tiles[index+1:]...)
 }
 
-func iterateOverArray() {
-
+func tryAllAvailableTiles(availableTiles []Tile, tileArray []Tile, positionOfTile int) ([]Tile, []Tile, error) {
+	for indexOfTileToCheck := range availableTiles {
+		fmt.Printf("\n\nPosition %v Test Tile %v\n", positionOfTile, indexOfTileToCheck)
+		tile, err := checkForTileMatch(availableTiles[indexOfTileToCheck], positionOfTile, tileArray, 0)
+		if err == nil {
+			tileArray = append(tileArray, tile)
+			availableTiles = removeTile(availableTiles, indexOfTileToCheck)
+			fmt.Printf("\tChosen Tile: %v\n", tile)
+			return availableTiles, tileArray, nil
+		}
+	}
+	fmt.Printf("no tiles match for slot %v (current tiles: %v)\n\n", positionOfTile, tileArray)
+	availableTiles = append(availableTiles, tileArray[len(tileArray)-1])
+	tileArray = removeTile(tileArray, len(tileArray)-1)
+	return availableTiles, tileArray, errors.New("No valid tile for position.")
 }
 
 func main() {
@@ -217,27 +230,38 @@ func main() {
 	// This holds each of the 9 tiles in order
 	tileArray := []Tile{}
 
-	// Add the first tile to the array and remove it from the available tiles
-	tileArray = append(tileArray, tiles[0])
-	availableTiles = removeTile(availableTiles, 0)
+	position := 0
+	maxPosition := 0
+	numRetries := 0
 
-	// Iterate over each tile placement.  We really start with 1 bc tile 0 is a little irrelevant
-	for i := 1; i <= 8; i++ {
-		for indexOfTileToCheck := range availableTiles {
-			numAvailableTilesLeft := len(availableTiles)
-			fmt.Printf("\n\nPosition %v Test Tile %v\n", i, indexOfTileToCheck)
-			tile, err := checkForTileMatch(availableTiles[indexOfTileToCheck], i, tileArray, 0)
-			if err == nil {
-				tileArray = append(tileArray, tile)
-				availableTiles = removeTile(availableTiles, indexOfTileToCheck)
-				fmt.Printf("\tChosen Tile: %v", tile)
-				break
-			} else if indexOfTileToCheck == numAvailableTilesLeft-1 {
-				fmt.Printf("no tiles match for slot %v (current tiles: %v)\n\n", i, tileArray)
-				return
+	for position < 9 {
+		maxPositionRetries := 9 - position - numRetries
+		if position == 0 {
+			tileArray = append(tileArray, availableTiles[0])
+			availableTiles = removeTile(availableTiles, 0)
+		} else {
+			// Iterate over each tile placement.  We really start with 1 bc tile 0 is a little irrelevant
+			availableTilesOut, tileArrayOut, err := tryAllAvailableTiles(availableTiles, tileArray, position)
+			availableTiles = availableTilesOut
+			tileArray = tileArrayOut
+			if err != nil {
+				if maxPositionRetries > 0 {
+					numRetries += 1
+					position = position - 2
+				} else {
+					availableTiles = append(availableTiles, tileArray[position-1])
+					tileArray = removeTile(tileArray, position-1)
+					position = position - 3
+					numRetries = 0
+				}
 			}
 		}
+		position += 1
 	}
 
-	fmt.Println(len(availableTiles))
+	fmt.Println(availableTiles)
+	fmt.Println(tileArray)
+	fmt.Println(maxPosition)
 }
+
+// Add the first tile to the array and remove it from the available tiles
