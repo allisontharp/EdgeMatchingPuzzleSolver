@@ -5,11 +5,14 @@ import (
 	"strings"
 )
 
+var maxWidth int = 30
+
 type Tile struct {
-	North string
-	East  string
-	South string
-	West  string
+	North       string
+	East        string
+	South       string
+	West        string
+	Orientation string
 }
 
 var tiles = []Tile{
@@ -69,7 +72,7 @@ var tiles = []Tile{
 	},
 }
 
-func pprintTile(tile Tile, maxWidth int) {
+func pprintTile(tile Tile) {
 	topSpaces := strings.Repeat(" ", (maxWidth-1-len(tile.North))/2)
 	bottomSpaces := strings.Repeat(" ", (maxWidth-1-len(tile.South))/2)
 	middleSpaces := strings.Repeat(" ", (maxWidth - 1 - len(tile.East) - len(tile.West)))
@@ -79,9 +82,18 @@ func pprintTile(tile Tile, maxWidth int) {
 	fmt.Printf("|%v%v%v|\n", bottomSpaces, tile.South, bottomSpaces)
 	fmt.Printf("%v\n", strings.Repeat("-", maxWidth))
 }
+func rotateTile(tile Tile) Tile {
+	newTile := Tile{
+		North: tile.West,
+		East:  tile.North,
+		South: tile.East,
+		West:  tile.South,
+	}
+	return newTile
+}
 
 func main() {
-	t := tiles[0]
-	pprintTile(t, 60)
-
+	pprintTile(tiles[0])
+	t := rotateTile(tiles[0])
+	pprintTile(t)
 }
