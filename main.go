@@ -7,6 +7,8 @@ package main
 import (
 	"errors"
 	"fmt"
+	"os"
+	"strconv"
 	"strings"
 
 	"github.com/fatih/structs"
@@ -21,7 +23,7 @@ Tile numbers will be:
 
 var maxWidth int = 30
 var allTileIDs = []int{1, 2, 3, 4, 5, 6, 7, 8, 9}
-var printDetails = true
+var printDetails bool
 
 type TileSide struct {
 	Direction   string
@@ -36,68 +38,134 @@ type Tile struct {
 	ID    int
 }
 
+// var tiles = []Tile{
+// 	{
+// 		North: "RBeetle",
+// 		East:  "LDragon",
+// 		South: "RDragon",
+// 		West:  "RGrasshopper",
+// 		ID:    1,
+// 	},
+// 	{
+// 		North: "LBeetle",
+// 		East:  "RGrasshopper",
+// 		South: "LAnt",
+// 		West:  "RDragon",
+// 		ID:    2,
+// 	},
+// 	{
+// 		North: "RAnt",
+// 		East:  "RBeetle",
+// 		South: "LBeetle",
+// 		West:  "LGrasshopper",
+// 		ID:    3,
+// 	},
+// 	{
+// 		North: "LDragon",
+// 		East:  "RAnt",
+// 		South: "RGrasshopper",
+// 		West:  "LAnt",
+// 		ID:    4,
+// 	},
+// 	{
+// 		North: "RAnt",
+// 		East:  "LDragon",
+// 		South: "RGrasshopper",
+// 		West:  "LBeetle",
+// 		ID:    5,
+// 	},
+// 	{
+// 		North: "RBeetle",
+// 		East:  "LAnt",
+// 		South: "RDragon",
+// 		West:  "LGrasshopper",
+// 		ID:    6,
+// 	},
+// 	{
+// 		North: "LAnt",
+// 		East:  "RBeetle",
+// 		South: "LGrasshopper",
+// 		West:  "LDragon",
+// 		ID:    7,
+// 	},
+// 	{
+// 		North: "LBeetle",
+// 		East:  "RGrasshopper",
+// 		South: "LDragon",
+// 		West:  "RAnt",
+// 		ID:    8,
+// 	},
+// 	{
+// 		North: "RGrasshopper",
+// 		East:  "LDragon",
+// 		South: "RAnt",
+// 		West:  "RBeetle",
+// 		ID:    9,
+// 	},
+// }
+
 var tiles = []Tile{
 	{
-		North: "RBeetle",
-		East:  "LDragon",
-		South: "RDragon",
-		West:  "RGrasshopper",
+		North: "LGoat",
+		East:  "LHouse",
+		South: "RMouse",
+		West:  "LTree",
 		ID:    1,
 	},
 	{
-		North: "LBeetle",
-		East:  "RGrasshopper",
-		South: "LAnt",
-		West:  "RDragon",
+		North: "LTree",
+		East:  "LHouse",
+		South: "LMouse",
+		West:  "RGoat",
 		ID:    2,
 	},
 	{
-		North: "RAnt",
-		East:  "RBeetle",
-		South: "LBeetle",
-		West:  "LGrasshopper",
+		North: "RGoat",
+		East:  "LHouse",
+		South: "RTree",
+		West:  "RMouse",
 		ID:    3,
 	},
 	{
-		North: "LDragon",
-		East:  "RAnt",
-		South: "RGrasshopper",
-		West:  "LAnt",
+		North: "RHouse",
+		East:  "LMouse",
+		South: "RTree",
+		West:  "RGoat",
 		ID:    4,
 	},
 	{
-		North: "RAnt",
-		East:  "LDragon",
-		South: "RGrasshopper",
-		West:  "LBeetle",
+		North: "LTree",
+		East:  "LMouse",
+		South: "LHouse",
+		West:  "RGoat",
 		ID:    5,
 	},
 	{
-		North: "RBeetle",
-		East:  "LAnt",
-		South: "RDragon",
-		West:  "LGrasshopper",
+		North: "LTree",
+		East:  "LGoat",
+		South: "LHouse",
+		West:  "RMouse",
 		ID:    6,
 	},
 	{
-		North: "LAnt",
-		East:  "RBeetle",
-		South: "LGrasshopper",
-		West:  "LDragon",
+		North: "RTree",
+		East:  "RGoat",
+		South: "RHouse",
+		West:  "LMouse",
 		ID:    7,
 	},
 	{
-		North: "LBeetle",
-		East:  "RGrasshopper",
-		South: "LDragon",
-		West:  "RAnt",
+		North: "RHouse",
+		East:  "RTree",
+		South: "LGoat",
+		West:  "RMouse",
 		ID:    8,
 	},
 	{
-		North: "RGrasshopper",
-		East:  "LDragon",
-		South: "RAnt",
-		West:  "RBeetle",
+		North: "LTree",
+		East:  "LMouse",
+		South: "LHouse",
+		West:  "RMouse",
 		ID:    9,
 	},
 }
@@ -257,6 +325,8 @@ func print(printText string) {
 func main() {
 	pprintTile(tiles[0])
 
+	printDetails, _ = strconv.ParseBool(os.Args[1])
+
 	placedTiles := []int{}
 	position := 0
 	firstTileIndex := 0
@@ -266,7 +336,7 @@ func main() {
 	availableTiles := []int{}
 
 	attemptNumber := 0
-	maxAttempts := 100000
+	maxAttempts := 170000
 
 	placedTiles = append(placedTiles, tiles[firstTileIndex].ID)
 	availableTiles = getAvailableTiles(placedTiles, allTileIDs)
@@ -377,12 +447,15 @@ func main() {
 					if testTileNumber == len(availableTiles)-1 {
 						// none of the available tiles worked
 						// need to use a different tile in the previous position (so, position=position-2)
+
 						position = position - 2
+
 						// need to also remove the placed tile if it wasn't the last one
 						if len(placedTiles) > 1 {
 							placedTiles = removePlacedTile(placedTiles, len(placedTiles)-1)
 							fmt.Printf("\t--->Placed Tiles: %v<---\n", placedTiles)
 						} else {
+
 							if firstTileRotationNumber <= 3 {
 								firstTile := getTileByID(placedTiles[0])
 								print("\tRotating first tile:\n")
@@ -391,12 +464,16 @@ func main() {
 								afterRotation := rotateTile(firstTile)
 								print(fmt.Sprintf("\t\tAfter: %v\n", afterRotation))
 								firstTileRotationNumber += 1
+								fmt.Printf("num rotations: %v\n", firstTileRotationNumber)
+								// break
+								return
 							} else {
-								fmt.Printf("\t--->Placed tiles before replacement: %v<---\n", placedTiles)
-								availableTilesByPosition[0] = removePlacedTile(availableTilesByPosition[0], 0)
-								placedTiles[0] = availableTilesByPosition[0][0]
-								fmt.Printf("\t--->Placed new Position 1 tile: %v<---\n", placedTiles)
-								firstTileRotationNumber = 0
+								return
+								// fmt.Printf("\t--->Placed tiles before replacement: %v<---\n", placedTiles)
+								// availableTilesByPosition[0] = removePlacedTile(availableTilesByPosition[0], 0)
+								// placedTiles[0] = availableTilesByPosition[0][0]
+								// fmt.Printf("\t--->Placed new Position 1 tile: %v<---\n", placedTiles)
+								// firstTileRotationNumber = 0
 							}
 						}
 						// need to mark that this is a retry
