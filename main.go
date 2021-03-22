@@ -1,3 +1,7 @@
+/*
+	TODO: Handle cases where a single tile has multiple valid placements.
+*/
+
 package main
 
 import (
@@ -262,7 +266,7 @@ func main() {
 	availableTiles := []int{}
 
 	attemptNumber := 0
-	maxAttempts := 78
+	maxAttempts := 100000
 
 	placedTiles = append(placedTiles, tiles[firstTileIndex].ID)
 	availableTiles = getAvailableTiles(placedTiles, allTileIDs)
@@ -272,6 +276,7 @@ func main() {
 	print(fmt.Sprintf("\tavailableTiles: %v\n", availableTiles))
 
 	position += 1
+	firstTileRotationNumber := 0
 
 	for position < 9 {
 		attemptNumber += 1
@@ -295,7 +300,7 @@ func main() {
 					isPrevious = true
 					runTileCheck = false
 				}
-			} else {
+			} else if position > 0 {
 
 				print(fmt.Sprintf("\tTotal tiles available in this position currently: %v\n", len(availableTilesByPosition[position])))
 				if len(availableTilesByPosition[position]) == 0 {
@@ -310,6 +315,7 @@ func main() {
 					runTileCheck = false
 				} else {
 					availableTilesByPosition[position] = removePlacedTile(availableTilesByPosition[position], 0)
+					print(fmt.Sprintf("\tTotal tiles available in this position after removal: %v\n", len(availableTilesByPosition[position])))
 				}
 				if len(availableTilesByPosition[position]) == 0 {
 					if !runTileCheck {
@@ -332,6 +338,14 @@ func main() {
 					availableTiles = getAvailableTiles(placedTiles, availableTilesByPosition[position])
 				}
 
+			} else {
+				/*
+					tile 0 works differently.  If it is a previous run, it would have been rotated or removed previously
+					if it was removed, a new tile needs to be chosen
+				*/
+				if len(placedTiles) == 0 {
+
+				}
 			}
 			if runTileCheck {
 
@@ -358,14 +372,33 @@ func main() {
 						break
 					} else { // tile did not work
 						print(fmt.Sprintf("\t---------\n\tERROR: %v\n\t---------\n", err))
+						print(fmt.Sprintf("\n\ttestTileNumber: %v | len(availableTiles): %v\n", testTileNumber, len(availableTiles)))
 					}
 					if testTileNumber == len(availableTiles)-1 {
 						// none of the available tiles worked
 						// need to use a different tile in the previous position (so, position=position-2)
 						position = position - 2
-						// need to also remove the placed tile
-						placedTiles = removePlacedTile(placedTiles, len(placedTiles)-1)
-						fmt.Printf("\t--->Placed Tiles: %v<---\n", placedTiles)
+						// need to also remove the placed tile if it wasn't the last one
+						if len(placedTiles) > 1 {
+							placedTiles = removePlacedTile(placedTiles, len(placedTiles)-1)
+							fmt.Printf("\t--->Placed Tiles: %v<---\n", placedTiles)
+						} else {
+							if firstTileRotationNumber <= 3 {
+								firstTile := getTileByID(placedTiles[0])
+								print("\tRotating first tile:\n")
+								print(fmt.Sprintf("\t\tBefore: %v\n", firstTile))
+
+								afterRotation := rotateTile(firstTile)
+								print(fmt.Sprintf("\t\tAfter: %v\n", afterRotation))
+								firstTileRotationNumber += 1
+							} else {
+								fmt.Printf("\t--->Placed tiles before replacement: %v<---\n", placedTiles)
+								availableTilesByPosition[0] = removePlacedTile(availableTilesByPosition[0], 0)
+								placedTiles[0] = availableTilesByPosition[0][0]
+								fmt.Printf("\t--->Placed new Position 1 tile: %v<---\n", placedTiles)
+								firstTileRotationNumber = 0
+							}
+						}
 						// need to mark that this is a retry
 						isPrevious = true
 					}
@@ -376,8 +409,8 @@ func main() {
 		position += 1
 	}
 
-	fmt.Printf("\n\n-----------------")
-	fmt.Printf("\nPlacedTiles: %v", placedTiles)
-	fmt.Printf("\n\n-----------------")
+	fmt.Printf("\n\n-----------------\n")
+	fmt.Printf("PlacedTiles: %v\n", placedTiles)
+	fmt.Printf("-----------------\n")
 
 }
