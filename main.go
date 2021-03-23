@@ -325,18 +325,20 @@ func print(printText string) {
 func main() {
 	pprintTile(tiles[0])
 
-	printDetails, _ = strconv.ParseBool(os.Args[1])
+	args := os.Args[1:]
+	printDetails, _ = strconv.ParseBool(args[0])
+	maxAttempts, _ := strconv.Atoi(args[1])
+	firstTileIndex, _ := strconv.Atoi(args[2])
+	fmt.Println(maxAttempts)
 
 	placedTiles := []int{}
 	position := 0
-	firstTileIndex := 0
 	isPrevious := false
 
 	availableTilesByPosition := [][]int{}
 	availableTiles := []int{}
 
 	attemptNumber := 0
-	maxAttempts := 170000
 
 	placedTiles = append(placedTiles, tiles[firstTileIndex].ID)
 	availableTiles = getAvailableTiles(placedTiles, allTileIDs)
@@ -354,8 +356,8 @@ func main() {
 		if attemptNumber > maxAttempts {
 			break
 		}
-		fmt.Printf("Position: %v\tAttempt: %v\n", position, attemptNumber)
-		fmt.Printf("\tisPrevious: %v\n", isPrevious)
+		fmt.Printf("Position: %v\tAttempt: %v/%v\n", position, attemptNumber, maxAttempts)
+		print(fmt.Sprintf("\tisPrevious: %v\n", isPrevious))
 		{
 			if !isPrevious {
 				availableTiles = getAvailableTiles(placedTiles, allTileIDs)
@@ -448,6 +450,11 @@ func main() {
 						// none of the available tiles worked
 						// need to use a different tile in the previous position (so, position=position-2)
 
+						if firstTileRotationNumber > 0 && position == 0 {
+							return
+						}
+						fmt.Printf("\tlen(placedTiles): %v\n", len(placedTiles))
+
 						position = position - 2
 
 						// need to also remove the placed tile if it wasn't the last one
@@ -466,7 +473,7 @@ func main() {
 								firstTileRotationNumber += 1
 								fmt.Printf("num rotations: %v\n", firstTileRotationNumber)
 								// break
-								return
+								// return
 							} else {
 								return
 								// fmt.Printf("\t--->Placed tiles before replacement: %v<---\n", placedTiles)
