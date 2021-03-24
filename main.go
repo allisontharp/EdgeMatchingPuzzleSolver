@@ -22,10 +22,10 @@ Tile numbers will be:
 */
 
 var maxPPrintWidth int = 30
-var allTileIDs = []int{1, 2, 3, 4} //, 5, 6, 7, 8, 9}
+var allTileIDs = []int{1, 2, 3, 4, 5, 6, 7, 8, 9}
 var printDetails bool
-var width = 2
-var height = 2
+var width = 3
+var height = 3
 
 type TileSide struct {
 	Direction   string
@@ -40,31 +40,163 @@ type Tile struct {
 	ID    int
 }
 
+// var tiles = []Tile{
+// 	{
+// 		North: "LGoat",
+// 		East:  "LBeetle",
+// 		South: "LAnt",
+// 		West:  "LGoat",
+// 		ID:    1,
+// 	}, {
+// 		North: "LGoat",
+// 		East:  "LGoat",
+// 		South: "RButterfly",
+// 		West:  "RBeetle",
+// 		ID:    2,
+// 	}, {
+// 		North: "RAnt",
+// 		East:  "RGrasshopper",
+// 		South: "LGoat",
+// 		West:  "LGoat",
+// 		ID:    3,
+// 	}, {
+// 		North: "LButterfly",
+// 		East:  "LGoat",
+// 		South: "LGoat",
+// 		West:  "LGrasshopper",
+// 		ID:    4,
+// 	},
+// }
+
+// var tiles = []Tile{
+// 	{
+// 		North: "RBeetle",
+// 		East:  "LDragon",
+// 		South: "RDragon",
+// 		West:  "RGrasshopper",
+// 		ID:    1,
+// 	},
+// 	{
+// 		North: "LBeetle",
+// 		East:  "RGrasshopper",
+// 		South: "LAnt",
+// 		West:  "RDragon",
+// 		ID:    2,
+// 	},
+// 	{
+// 		North: "RAnt",
+// 		East:  "RBeetle",
+// 		South: "LBeetle",
+// 		West:  "LGrasshopper",
+// 		ID:    3,
+// 	},
+// 	{
+// 		North: "LDragon",
+// 		East:  "RAnt",
+// 		South: "RGrasshopper",
+// 		West:  "LAnt",
+// 		ID:    4,
+// 	},
+// 	{
+// 		North: "RAnt",
+// 		East:  "LDragon",
+// 		South: "RGrasshopper",
+// 		West:  "LBeetle",
+// 		ID:    5,
+// 	},
+// 	{
+// 		North: "RBeetle",
+// 		East:  "LAnt",
+// 		South: "RDragon",
+// 		West:  "LGrasshopper",
+// 		ID:    6,
+// 	},
+// 	{
+// 		North: "LAnt",
+// 		East:  "RBeetle",
+// 		South: "LGrasshopper",
+// 		West:  "LDragon",
+// 		ID:    7,
+// 	},
+// 	{
+// 		North: "LBeetle",
+// 		East:  "RGrasshopper",
+// 		South: "LDragon",
+// 		West:  "RAnt",
+// 		ID:    8,
+// 	},
+// 	{
+// 		North: "RGrasshopper",
+// 		East:  "LDragon",
+// 		South: "RAnt",
+// 		West:  "RBeetle",
+// 		ID:    9,
+// 	},
+// }
+
 var tiles = []Tile{
 	{
 		North: "LGoat",
-		East:  "LBeetle",
-		South: "LAnt",
-		West:  "LGoat",
+		East:  "LHouse",
+		South: "RMouse",
+		West:  "LTree",
 		ID:    1,
-	}, {
-		North: "LGoat",
-		East:  "LGoat",
-		South: "RButterfly",
-		West:  "RBeetle",
+	},
+	{
+		North: "LTree",
+		East:  "LHouse",
+		South: "LMouse",
+		West:  "RGoat",
 		ID:    2,
-	}, {
-		North: "RAnt",
-		East:  "RGrasshopper",
-		South: "LGoat",
-		West:  "LGoat",
+	},
+	{
+		North: "RGoat",
+		East:  "LHouse",
+		South: "RTree",
+		West:  "RMouse",
 		ID:    3,
-	}, {
-		North: "LButterfly",
-		East:  "LGoat",
-		South: "LGoat",
-		West:  "LGrasshopper",
+	},
+	{
+		North: "RHouse",
+		East:  "LMouse",
+		South: "RTree",
+		West:  "RGoat",
 		ID:    4,
+	},
+	{
+		North: "LTree",
+		East:  "LMouse",
+		South: "LHouse",
+		West:  "RGoat",
+		ID:    5,
+	},
+	{
+		North: "LTree",
+		East:  "LGoat",
+		South: "LHouse",
+		West:  "RMouse",
+		ID:    6,
+	},
+	{
+		North: "RTree",
+		East:  "RGoat",
+		South: "RHouse",
+		West:  "LMouse",
+		ID:    7,
+	},
+	{
+		North: "RHouse",
+		East:  "RTree",
+		South: "LGoat",
+		West:  "RMouse",
+		ID:    8,
+	},
+	{
+		North: "LTree",
+		East:  "LMouse",
+		South: "LHouse",
+		West:  "RMouse",
+		ID:    9,
 	},
 }
 
@@ -296,6 +428,7 @@ func main() {
 		}
 		fmt.Printf("Position: %v\tAttempt: %v/%v\n", position, attemptNumber, maxAttempts)
 		print(fmt.Sprintf("\tisPrevious: %v\n", isPrevious))
+		print(fmt.Sprintf("\t--->Placed Tiles: %v<---\n", placedTiles))
 		if !isPrevious {
 			// the available tiles for the position reset to be whatever is available in the pool
 			availableTiles = getAvailableTiles(placedTiles, allTileIDs)
@@ -305,50 +438,72 @@ func main() {
 				position = position - 2
 				// need to also remove the placed tile
 				placedTiles = removePlacedTile(placedTiles, len(placedTiles)-1)
-				print(fmt.Sprintf("\t--->Placed Tiles: %v<---\n", placedTiles))
 				// need to mark that this is a retry
 				isPrevious = true
 				runTileCheck = false
 			}
 		} else if position > 0 {
 			// the available tiles are the tiles that it hasn't yet tried
-			print(fmt.Sprintf("\tTotal tiles available in this position currently: %v\n", len(availableTilesByPosition[position])))
+			// print(fmt.Sprintf("\tTotal tiles available in this position currently: %v\n", len(availableTilesByPosition[position])))
+			// if len(availableTilesByPosition[position]) == 0 {
+			// 	// none of the available tiles worked
+			// 	// need to use a different tile in the previous position (so, position=position-2)
+			// 	position = position - 2
+			// 	// need to also remove the placed tile
+			// 	placedTiles = removePlacedTile(placedTiles, len(placedTiles)-1)
+			// 	print(fmt.Sprintf("\t--->Placed Tiles After Removal: %v<---\n", placedTiles))
+			// 	// need to mark that this is a retry
+			// 	isPrevious = true
+			// 	runTileCheck = false
+			// } else {
+			// 	availableTilesByPosition[position] = removePlacedTile(availableTilesByPosition[position], 0)
+			// 	print(fmt.Sprintf("\tTotal tiles available in this position after removal: %v\n", len(availableTilesByPosition[position])))
+			// }
 			if len(availableTilesByPosition[position]) == 0 {
-				// none of the available tiles worked
-				// need to use a different tile in the previous position (so, position=position-2)
-				position = position - 2
-				// need to also remove the placed tile
-				placedTiles = removePlacedTile(placedTiles, len(placedTiles)-1)
-				print(fmt.Sprintf("\t--->Placed Tiles After Removal: %v<---\n", placedTiles))
-				// need to mark that this is a retry
-				isPrevious = true
-				runTileCheck = false
-			} else {
-				availableTilesByPosition[position] = removePlacedTile(availableTilesByPosition[position], 0)
-				print(fmt.Sprintf("\tTotal tiles available in this position after removal: %v\n", len(availableTilesByPosition[position])))
-			}
-			if len(availableTilesByPosition[position]) == 0 {
+				// there are no more tiles for this position
+				originalPosition := position
 				if !runTileCheck {
 					position = position - 1
 				} else {
 					position = position - 2
 				}
-				print(fmt.Sprintf("\tPosition: %v\n", position))
+				if originalPosition == 1 { // the last tile for position 1 didnt work, so need to trigger a tile 0 rotate
+					runTileCheck = false
+					fmt.Printf("\nNumber of Rotations for First Tile Before: %v\n", firstTileRotationNumber)
+					if firstTileRotationNumber <= 3 {
+						firstTile := getTileByID(placedTiles[0])
+						print("\tRotating first tile:\n")
+						print(fmt.Sprintf("\t\tBefore: %v\n", firstTile))
 
-				// none of the available tiles worked
-				// need to use a different tile in the previous position (so, position=position-2)
-				// position = position - 2
-				// need to also remove the placed tile
-				placedTiles = removePlacedTile(placedTiles, len(placedTiles)-1)
-				fmt.Printf("\t--->Placed Tiles: %v<---\n", placedTiles)
-				// need to mark that this is a retry
-				isPrevious = true
-				runTileCheck = false
+						afterRotation := rotateTile(firstTile)
+						print(fmt.Sprintf("\t\tAfter: %v\n", afterRotation))
+						firstTileRotationNumber += 1
+						fmt.Printf("\nNumber of Rotations for First Tile: %v\n", firstTileRotationNumber)
+					} else {
+						fmt.Printf("\t--->Placed tiles before replacement: %v<---\n", placedTiles)
+						placedTiles[0] = availableTilesByPosition[0][0]
+						availableTilesByPosition[0] = removePlacedTile(availableTilesByPosition[0], 0)
+						fmt.Printf("\t--->Placed new Position 1 tile: %v<---\n", placedTiles)
+						firstTileRotationNumber = 0
+					}
+				} else {
+					// none of the available tiles worked
+					// need to use a different tile in the previous position (so, position=position-2)
+					// position = position - 2
+					// need to also remove the placed tile
+					placedTiles = removePlacedTile(placedTiles, len(placedTiles)-1)
+					fmt.Printf("\t--->Placed Tiles: %v<---\n", placedTiles)
+					// need to mark that this is a retry
+					isPrevious = true
+					runTileCheck = false
+				}
+
 			} else {
 				availableTiles = getAvailableTiles(placedTiles, availableTilesByPosition[position])
 			}
 
-		} else {
+		} else { // redo first tile (it was already rotated)
+			print(fmt.Sprintf("\tTotal tiles available in this position currently: %v\n", len(availableTilesByPosition[position])))
 			runTileCheck = false
 			isPrevious = false
 		}
@@ -377,7 +532,7 @@ func main() {
 					break
 				} else { // tile did not work
 					print(fmt.Sprintf("\t---------\n\tERROR: %v\n\t---------", err))
-					print(fmt.Sprintf("\n\ttestTileNumber: %v | len(availableTiles): %v\n", testTileNumber, len(availableTiles)))
+					print(fmt.Sprintf("\n\ttestTileNumber: %v | len(availableTiles): %v | position: %v\n", testTileNumber, len(availableTiles), position))
 				}
 				if testTileNumber == len(availableTiles)-1 && position > 0 {
 					// none of the available tiles for the position worked, so we need to go back one position and try a new tile
@@ -401,6 +556,7 @@ func main() {
 							fmt.Printf("\nNumber of Rotations for First Tile: %v\n", firstTileRotationNumber)
 						} else {
 							fmt.Printf("\t--->Placed tiles before replacement: %v<---\n", placedTiles)
+							fmt.Printf("\tavailableTilesByPosition[0]: %v\n", availableTilesByPosition[0])
 							placedTiles[0] = availableTilesByPosition[0][0]
 							availableTilesByPosition[0] = removePlacedTile(availableTilesByPosition[0], 0)
 							fmt.Printf("\t--->Placed new Position 1 tile: %v<---\n", placedTiles)
@@ -421,6 +577,8 @@ func main() {
 		fmt.Printf("\n\nFound solution in %v attempts\n", attemptNumber)
 		pprintTiles(placedTiles)
 	}
+
+	fmt.Println(getTileByID(7))
 
 	fmt.Printf("\n\n-----------------\n")
 	fmt.Printf("PlacedTiles: %v\n", placedTiles)
