@@ -222,7 +222,7 @@ func pprintTile(tile Tile) {
 	fmt.Printf(" %v\n", strings.Repeat("-", maxPPrintWidth))
 }
 
-func pprintTiles(tileIDs []int) {
+func pprintTiles(tiles []Tile) {
 	descLength := 4
 	topSpaces := strings.Repeat(" ", (maxPPrintWidth-descLength+1)/2)
 	bottomSpaces := strings.Repeat(" ", (maxPPrintWidth-descLength+1)/2)
@@ -237,7 +237,7 @@ func pprintTiles(tileIDs []int) {
 		middleRow := ""
 		bottomRow := ""
 		for x <= width {
-			tile := getTileByID(tileIDs[i])
+			tile := tiles[i]
 			topRow += fmt.Sprintf("|%v%v%v|", topSpaces, tile.North[0:descLength], topSpaces)
 			middleRow += fmt.Sprintf("|%v%v%v|", tile.West[0:descLength], middleSpaces, tile.East[0:descLength])
 			bottomRow += fmt.Sprintf("|%v%v%v|", bottomSpaces, tile.South[:descLength], bottomSpaces)
@@ -262,15 +262,21 @@ func rotateTile(tile Tile) Tile {
 		West:  tile.South,
 		ID:    tile.ID,
 	}
+	// save the rotation of the tile
+	for index, t := range tiles {
+		if t.ID == tile.ID {
+			tiles[index] = newTile
+		}
+	}
 	return newTile
 }
 
-func getAvailableTiles(placedTiles []int, availableTileIDs []int) (diff []int) {
+func getAvailableTiles(placedTiles []Tile, availableTileIDs []int) (diff []int) {
 	print(fmt.Sprintf("\t\tplacedTiles: %v | available tile ids: %v\n", placedTiles, availableTileIDs))
 
 	m := make(map[int]bool)
 	for _, item := range placedTiles {
-		m[item] = true
+		m[item.ID] = true
 	}
 	for _, item := range availableTileIDs {
 		if _, ok := m[item]; !ok {
@@ -294,6 +300,13 @@ func getTileByID(tileID int) (out Tile) {
 		if tile.ID == tileID {
 			out = tile
 		}
+	}
+	return out
+}
+
+func getTileIDs(tiles []Tile) (out []int) {
+	for _, tile := range tiles {
+		out = append(out, tile.ID)
 	}
 	return out
 }
@@ -344,7 +357,7 @@ func checkEdgeMatch(currentTileSide string, testTileSide string) bool {
 }
 
 // checks all edges of test tile
-func checkTileMatch(currentTile Tile, position int, placedTiles []int, rotationNumber int) (Tile, error) {
+func checkTileMatch(currentTile Tile, position int, placedTiles []Tile, rotationNumber int) (Tile, error) {
 	print(fmt.Sprintf("\t\tRotation Number: %v\n", rotationNumber))
 	if rotationNumber > 3 {
 		return currentTile, errors.New("Invalid Tile")
@@ -361,7 +374,7 @@ func checkTileMatch(currentTile Tile, position int, placedTiles []int, rotationN
 
 	for _, sideToMatch := range sidesToMatch {
 		currentTileSide := fmt.Sprintf("%v", tile[sideToMatch.sideToMatchOnTile])
-		tileToMatch := getTileByID(placedTiles[sideToMatch.tileToMatch])
+		tileToMatch := placedTiles[sideToMatch.tileToMatch]
 		testTile := structs.Map(tileToMatch)
 		testTileSide := fmt.Sprintf("%v", testTile[sideToMatch.sideToMatchOnMatchedTile])
 
@@ -382,8 +395,12 @@ func checkTileMatch(currentTile Tile, position int, placedTiles []int, rotationN
 	return currentTile, errors.New("Tile does not work..")
 }
 
-func removePlacedTile(placedTiles []int, index int) []int {
+func removePlacedTile(placedTiles []Tile, index int) []Tile {
 	return append(placedTiles[:index], placedTiles[index+1:]...)
+}
+
+func removeAvailableTile(availableTileIDs []int, index int) []int {
+	return append(availableTileIDs[:index], availableTileIDs[index+1:]...)
 }
 
 func print(printText string) {
@@ -401,7 +418,7 @@ func main() {
 	firstTileIndex, _ := strconv.Atoi(args[2])
 	fmt.Printf("# Attempts: %v\n", maxAttempts)
 
-	placedTiles := []int{}
+	placedTiles := []Tile{}
 	position := 0
 	isPrevious := false
 
@@ -410,7 +427,7 @@ func main() {
 
 	attemptNumber := 0
 
-	placedTiles = append(placedTiles, tiles[firstTileIndex].ID)
+	placedTiles = append(placedTiles, tiles[firstTileIndex])
 	availableTiles = getAvailableTiles(placedTiles, allTileIDs)
 	availableTilesByPosition = append(availableTilesByPosition, availableTiles)
 	print(fmt.Sprintf("\tcurrentTile: %v\n", tiles[firstTileIndex]))
@@ -428,7 +445,7 @@ func main() {
 		}
 		fmt.Printf("Position: %v\tAttempt: %v/%v\n", position, attemptNumber, maxAttempts)
 		print(fmt.Sprintf("\tisPrevious: %v\n", isPrevious))
-		print(fmt.Sprintf("\t--->Placed Tiles: %v<---\n", placedTiles))
+		print(fmt.Sprintf("\t--->Placed Tiles: %v<---\n", getTileIDs(placedTiles)))
 		if !isPrevious {
 			// the available tiles for the position reset to be whatever is available in the pool
 			availableTiles = getAvailableTiles(placedTiles, allTileIDs)
@@ -443,22 +460,6 @@ func main() {
 				runTileCheck = false
 			}
 		} else if position > 0 {
-			// the available tiles are the tiles that it hasn't yet tried
-			// print(fmt.Sprintf("\tTotal tiles available in this position currently: %v\n", len(availableTilesByPosition[position])))
-			// if len(availableTilesByPosition[position]) == 0 {
-			// 	// none of the available tiles worked
-			// 	// need to use a different tile in the previous position (so, position=position-2)
-			// 	position = position - 2
-			// 	// need to also remove the placed tile
-			// 	placedTiles = removePlacedTile(placedTiles, len(placedTiles)-1)
-			// 	print(fmt.Sprintf("\t--->Placed Tiles After Removal: %v<---\n", placedTiles))
-			// 	// need to mark that this is a retry
-			// 	isPrevious = true
-			// 	runTileCheck = false
-			// } else {
-			// 	availableTilesByPosition[position] = removePlacedTile(availableTilesByPosition[position], 0)
-			// 	print(fmt.Sprintf("\tTotal tiles available in this position after removal: %v\n", len(availableTilesByPosition[position])))
-			// }
 			if len(availableTilesByPosition[position]) == 0 {
 				// there are no more tiles for this position
 				originalPosition := position
@@ -471,7 +472,7 @@ func main() {
 					runTileCheck = false
 					fmt.Printf("\nNumber of Rotations for First Tile Before: %v\n", firstTileRotationNumber)
 					if firstTileRotationNumber <= 3 {
-						firstTile := getTileByID(placedTiles[0])
+						firstTile := placedTiles[0]
 						print("\tRotating first tile:\n")
 						print(fmt.Sprintf("\t\tBefore: %v\n", firstTile))
 
@@ -480,10 +481,10 @@ func main() {
 						firstTileRotationNumber += 1
 						fmt.Printf("\nNumber of Rotations for First Tile: %v\n", firstTileRotationNumber)
 					} else {
-						fmt.Printf("\t--->Placed tiles before replacement: %v<---\n", placedTiles)
-						placedTiles[0] = availableTilesByPosition[0][0]
-						availableTilesByPosition[0] = removePlacedTile(availableTilesByPosition[0], 0)
-						fmt.Printf("\t--->Placed new Position 1 tile: %v<---\n", placedTiles)
+						fmt.Printf("\t--->Placed tiles before replacement: %v<---\n", getTileIDs(placedTiles))
+						placedTiles[0] = getTileByID(availableTilesByPosition[0][0])
+						availableTilesByPosition[0] = removeAvailableTile(availableTilesByPosition[0], 0)
+						fmt.Printf("\t--->Placed new Position 1 tile: %v<---\n", getTileIDs(placedTiles))
 						firstTileRotationNumber = 0
 					}
 				} else {
@@ -492,7 +493,7 @@ func main() {
 					// position = position - 2
 					// need to also remove the placed tile
 					placedTiles = removePlacedTile(placedTiles, len(placedTiles)-1)
-					fmt.Printf("\t--->Placed Tiles: %v<---\n", placedTiles)
+					fmt.Printf("\t--->Placed Tiles: %v<---\n", getTileIDs(placedTiles))
 					// need to mark that this is a retry
 					isPrevious = true
 					runTileCheck = false
@@ -516,7 +517,7 @@ func main() {
 				currentTile, err := checkTileMatch(currentTile, position, placedTiles, 0)
 				if err == nil { // tile worked, move on to next position
 					print(fmt.Sprintf("\tchosen tile: %v\n", currentTile))
-					placedTiles = append(placedTiles, currentTile.ID)
+					placedTiles = append(placedTiles, currentTile)
 					availableTiles = getAvailableTiles(placedTiles, availableTiles)
 					print(fmt.Sprintf("\tAvailableTilesByPosition: %v | position: %v\n", len(availableTilesByPosition), position))
 					if len(availableTilesByPosition) <= position {
@@ -528,7 +529,7 @@ func main() {
 					print(fmt.Sprintf("\tavailableTiles after pick: %v\n", availableTiles))
 					print(fmt.Sprintf("\tPosition's available tiles: %v\n", availableTilesByPosition[position]))
 					isPrevious = false
-					fmt.Printf("\t--->Placed Tiles: %v<---\n", placedTiles)
+					fmt.Printf("\t--->Placed Tiles: %v<---\n", getTileIDs(placedTiles))
 					break
 				} else { // tile did not work
 					print(fmt.Sprintf("\t---------\n\tERROR: %v\n\t---------", err))
@@ -543,10 +544,11 @@ func main() {
 					// need to also remove the placed tile if it wasn't the last one
 					if len(placedTiles) > 1 {
 						placedTiles = removePlacedTile(placedTiles, len(placedTiles)-1)
-						fmt.Printf("\t--->Placed Tiles: %v<---\n", placedTiles)
+						fmt.Printf("\t--->Placed Tiles: %v<---\n", getTileIDs(placedTiles))
 					} else { // there is only one other tile
+						fmt.Printf("\tNumber of Tile 1 Rotations: %v\n", firstTileRotationNumber)
 						if firstTileRotationNumber <= 3 {
-							firstTile := getTileByID(placedTiles[0])
+							firstTile := placedTiles[0]
 							print("\tRotating first tile:\n")
 							print(fmt.Sprintf("\t\tBefore: %v\n", firstTile))
 
@@ -555,11 +557,11 @@ func main() {
 							firstTileRotationNumber += 1
 							fmt.Printf("\nNumber of Rotations for First Tile: %v\n", firstTileRotationNumber)
 						} else {
-							fmt.Printf("\t--->Placed tiles before replacement: %v<---\n", placedTiles)
+							fmt.Printf("\t--->Placed tiles before replacement: %v<---\n", getTileIDs(placedTiles))
 							fmt.Printf("\tavailableTilesByPosition[0]: %v\n", availableTilesByPosition[0])
-							placedTiles[0] = availableTilesByPosition[0][0]
-							availableTilesByPosition[0] = removePlacedTile(availableTilesByPosition[0], 0)
-							fmt.Printf("\t--->Placed new Position 1 tile: %v<---\n", placedTiles)
+							placedTiles[0] = getTileByID(availableTilesByPosition[0][0])
+							availableTilesByPosition[0] = removeAvailableTile(availableTilesByPosition[0], 0)
+							fmt.Printf("\t--->Placed new Position 1 tile: %v<---\n", getTileIDs(placedTiles))
 							firstTileRotationNumber = 0
 						}
 					}
