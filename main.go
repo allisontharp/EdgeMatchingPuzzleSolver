@@ -21,9 +21,11 @@ Tile numbers will be:
 6 7 8
 */
 
-var maxWidth int = 30
-var allTileIDs = []int{1, 2, 3, 4, 5, 6, 7, 8, 9}
+var maxPPrintWidth int = 30
+var allTileIDs = []int{1, 2, 3, 4} //, 5, 6, 7, 8, 9}
 var printDetails bool
+var width = 2
+var height = 2
 
 type TileSide struct {
 	Direction   string
@@ -38,135 +40,31 @@ type Tile struct {
 	ID    int
 }
 
-// var tiles = []Tile{
-// 	{
-// 		North: "RBeetle",
-// 		East:  "LDragon",
-// 		South: "RDragon",
-// 		West:  "RGrasshopper",
-// 		ID:    1,
-// 	},
-// 	{
-// 		North: "LBeetle",
-// 		East:  "RGrasshopper",
-// 		South: "LAnt",
-// 		West:  "RDragon",
-// 		ID:    2,
-// 	},
-// 	{
-// 		North: "RAnt",
-// 		East:  "RBeetle",
-// 		South: "LBeetle",
-// 		West:  "LGrasshopper",
-// 		ID:    3,
-// 	},
-// 	{
-// 		North: "LDragon",
-// 		East:  "RAnt",
-// 		South: "RGrasshopper",
-// 		West:  "LAnt",
-// 		ID:    4,
-// 	},
-// 	{
-// 		North: "RAnt",
-// 		East:  "LDragon",
-// 		South: "RGrasshopper",
-// 		West:  "LBeetle",
-// 		ID:    5,
-// 	},
-// 	{
-// 		North: "RBeetle",
-// 		East:  "LAnt",
-// 		South: "RDragon",
-// 		West:  "LGrasshopper",
-// 		ID:    6,
-// 	},
-// 	{
-// 		North: "LAnt",
-// 		East:  "RBeetle",
-// 		South: "LGrasshopper",
-// 		West:  "LDragon",
-// 		ID:    7,
-// 	},
-// 	{
-// 		North: "LBeetle",
-// 		East:  "RGrasshopper",
-// 		South: "LDragon",
-// 		West:  "RAnt",
-// 		ID:    8,
-// 	},
-// 	{
-// 		North: "RGrasshopper",
-// 		East:  "LDragon",
-// 		South: "RAnt",
-// 		West:  "RBeetle",
-// 		ID:    9,
-// 	},
-// }
-
 var tiles = []Tile{
 	{
 		North: "LGoat",
-		East:  "LHouse",
-		South: "RMouse",
-		West:  "LTree",
+		East:  "LBeetle",
+		South: "LAnt",
+		West:  "LGoat",
 		ID:    1,
-	},
-	{
-		North: "LTree",
-		East:  "LHouse",
-		South: "LMouse",
-		West:  "RGoat",
-		ID:    2,
-	},
-	{
-		North: "RGoat",
-		East:  "LHouse",
-		South: "RTree",
-		West:  "RMouse",
-		ID:    3,
-	},
-	{
-		North: "RHouse",
-		East:  "LMouse",
-		South: "RTree",
-		West:  "RGoat",
-		ID:    4,
-	},
-	{
-		North: "LTree",
-		East:  "LMouse",
-		South: "LHouse",
-		West:  "RGoat",
-		ID:    5,
-	},
-	{
-		North: "LTree",
+	}, {
+		North: "LGoat",
 		East:  "LGoat",
-		South: "LHouse",
-		West:  "RMouse",
-		ID:    6,
-	},
-	{
-		North: "RTree",
-		East:  "RGoat",
-		South: "RHouse",
-		West:  "LMouse",
-		ID:    7,
-	},
-	{
-		North: "RHouse",
-		East:  "RTree",
+		South: "RButterfly",
+		West:  "RBeetle",
+		ID:    2,
+	}, {
+		North: "RAnt",
+		East:  "RGrasshopper",
 		South: "LGoat",
-		West:  "RMouse",
-		ID:    8,
-	},
-	{
-		North: "LTree",
-		East:  "LMouse",
-		South: "LHouse",
-		West:  "RMouse",
-		ID:    9,
+		West:  "LGoat",
+		ID:    3,
+	}, {
+		North: "LButterfly",
+		East:  "LGoat",
+		South: "LGoat",
+		West:  "LGrasshopper",
+		ID:    4,
 	},
 }
 
@@ -180,40 +78,48 @@ type sideToMatch struct {
 	sideToMatchOnMatchedTile string // side to match on the tile you are matching to
 }
 
-var sidesToMatchArray = [][]sideToMatch{
-	// Tile 0 has no matches
-	{{}},
-	// Tile 1 matches tile 0 on the W side
-	{{tileToMatch: 0, sideToMatchOnTile: "West", sideToMatchOnMatchedTile: "East"}},
-	// Tile 2 Matches tile 1 on the W side
-	{{tileToMatch: 1, sideToMatchOnTile: "West", sideToMatchOnMatchedTile: "East"}},
-	// Tile 3 matches tile 0 on the N side
-	{{tileToMatch: 0, sideToMatchOnTile: "North", sideToMatchOnMatchedTile: "South"}},
-	// tile 4 matches tile 3 on the W side and tile 1 on the N side
-	{{tileToMatch: 3, sideToMatchOnTile: "West", sideToMatchOnMatchedTile: "East"},
-		{tileToMatch: 1, sideToMatchOnTile: "North", sideToMatchOnMatchedTile: "South"}},
-	// Tile 5 matches tile 4 on W side and tile 2 on N side
-	{{tileToMatch: 4, sideToMatchOnTile: "West", sideToMatchOnMatchedTile: "East"},
-		{tileToMatch: 2, sideToMatchOnTile: "North", sideToMatchOnMatchedTile: "South"}},
-	// Tile 6 matches tile 3 on the N side
-	{{tileToMatch: 3, sideToMatchOnTile: "North", sideToMatchOnMatchedTile: "South"}},
-	// Tile 7 matches tile 4 on N sideand tile 6 on the W side
-	{{tileToMatch: 6, sideToMatchOnTile: "West", sideToMatchOnMatchedTile: "East"},
-		{tileToMatch: 4, sideToMatchOnTile: "North", sideToMatchOnMatchedTile: "South"}},
-	// Tile 8 matches tile 7 on W side and tile 4 on N side
-	{{tileToMatch: 7, sideToMatchOnTile: "West", sideToMatchOnMatchedTile: "East"},
-		{tileToMatch: 5, sideToMatchOnTile: "North", sideToMatchOnMatchedTile: "South"}},
+func pprintTile(tile Tile) {
+	descLength := 4
+	topSpaces := strings.Repeat(" ", (maxPPrintWidth-descLength+1)/2)
+	bottomSpaces := strings.Repeat(" ", (maxPPrintWidth-descLength+1)/2)
+	middleSpaces := strings.Repeat(" ", (maxPPrintWidth - (2 * descLength)))
+	fmt.Printf(" %v\n", strings.Repeat("-", maxPPrintWidth))
+	fmt.Printf("|%v%v%v|\n", topSpaces, tile.North[0:descLength], topSpaces)
+	fmt.Printf("|%v%v%v|\n", tile.West[0:descLength], middleSpaces, tile.East[0:descLength])
+	fmt.Printf("|%v%v%v|\n", bottomSpaces, tile.South[:descLength], bottomSpaces)
+	fmt.Printf(" %v\n", strings.Repeat("-", maxPPrintWidth))
 }
 
-func pprintTile(tile Tile) {
-	topSpaces := strings.Repeat(" ", (maxWidth-1-len(tile.North))/2)
-	bottomSpaces := strings.Repeat(" ", (maxWidth-1-len(tile.South))/2)
-	middleSpaces := strings.Repeat(" ", (maxWidth - 1 - len(tile.East) - len(tile.West)))
-	fmt.Printf("%v\n", strings.Repeat("-", maxWidth))
-	fmt.Printf("|%v%v%v|\n", topSpaces, tile.North, topSpaces)
-	fmt.Printf("|%v%v%v|\n", tile.West, middleSpaces, tile.East)
-	fmt.Printf("|%v%v%v|\n", bottomSpaces, tile.South, bottomSpaces)
-	fmt.Printf("%v\n", strings.Repeat("-", maxWidth))
+func pprintTiles(tileIDs []int) {
+	descLength := 4
+	topSpaces := strings.Repeat(" ", (maxPPrintWidth-descLength+1)/2)
+	bottomSpaces := strings.Repeat(" ", (maxPPrintWidth-descLength+1)/2)
+	middleSpaces := strings.Repeat(" ", (maxPPrintWidth - (2 * descLength)))
+
+	// print the top bar
+	x := 1
+	y := 1
+	i := 0
+	for y <= height {
+		topRow := ""
+		middleRow := ""
+		bottomRow := ""
+		for x <= width {
+			tile := getTileByID(tileIDs[i])
+			topRow += fmt.Sprintf("|%v%v%v|", topSpaces, tile.North[0:descLength], topSpaces)
+			middleRow += fmt.Sprintf("|%v%v%v|", tile.West[0:descLength], middleSpaces, tile.East[0:descLength])
+			bottomRow += fmt.Sprintf("|%v%v%v|", bottomSpaces, tile.South[:descLength], bottomSpaces)
+			x += 1
+			i += 1
+		}
+		fmt.Printf(" %v\n", strings.Repeat("-", maxPPrintWidth*width+width))
+		fmt.Printf("%v\n", topRow)
+		fmt.Printf("%v\n", middleRow)
+		fmt.Printf("%v\n", bottomRow)
+		fmt.Printf(" %v\n", strings.Repeat("-", maxPPrintWidth*width+width))
+		x = 1
+		y += 1
+	}
 }
 
 func rotateTile(tile Tile) Tile {
@@ -260,10 +166,40 @@ func getTileByID(tileID int) (out Tile) {
 	return out
 }
 
+//Gets x,y position of tile by position number
+func getTileCoordinates(position int, width int) (x int, y int) {
+	return position % width, position / width
+}
+
+func getSidesToMatch(position int, width int) []sideToMatch {
+	x, y := getTileCoordinates(position, width)
+	out := []sideToMatch{}
+	// tiles on left edge don't need to match anything in their row
+	if x > 0 { // tile is not on left edge
+		out = append(out, sideToMatch{
+			tileToMatch:              position - 1,
+			sideToMatchOnTile:        "West",
+			sideToMatchOnMatchedTile: "East",
+		})
+	}
+
+	// tiles on the top don't need to match anything above them
+	if y > 0 { // tile is not on top row
+		out = append(out, sideToMatch{
+			tileToMatch:              position - width,
+			sideToMatchOnTile:        "North",
+			sideToMatchOnMatchedTile: "South",
+		})
+	}
+
+	return out
+}
+
 // checks an individual edge
 func checkEdgeMatch(currentTileSide string, testTileSide string) bool {
 	current := splitTileSide(currentTileSide)
 	test := splitTileSide(testTileSide)
+	print(fmt.Sprintf("\t\tComparing %v and %v\n", current, test))
 	// could do this with ORs and probably other ways, but this is easiest for now
 	if current.Description == test.Description {
 		if current.Direction == "R" && test.Direction == "L" {
@@ -285,7 +221,8 @@ func checkTileMatch(currentTile Tile, position int, placedTiles []int, rotationN
 	if position == 0 {
 		return currentTile, nil
 	}
-	sidesToMatch := sidesToMatchArray[position]
+	sidesToMatch := getSidesToMatch(position, width)
+	print(fmt.Sprintf("\t\tSidesToMatch: %v\n", sidesToMatch))
 	tile := structs.Map(currentTile)
 	isTileMatch := true
 
@@ -350,7 +287,7 @@ func main() {
 	position += 1
 	firstTileRotationNumber := 0
 
-	for position < 9 {
+	for position < len(allTileIDs) {
 		attemptNumber += 1
 		runTileCheck := true
 		if attemptNumber > maxAttempts {
@@ -453,7 +390,6 @@ func main() {
 						if firstTileRotationNumber > 0 && position == 0 {
 							return
 						}
-						fmt.Printf("\tlen(placedTiles): %v\n", len(placedTiles))
 
 						position = position - 2
 
@@ -491,6 +427,11 @@ func main() {
 
 		}
 		position += 1
+	}
+
+	// it found a match
+	if len(placedTiles) == len(allTileIDs) {
+		pprintTiles(placedTiles)
 	}
 
 	fmt.Printf("\n\n-----------------\n")
