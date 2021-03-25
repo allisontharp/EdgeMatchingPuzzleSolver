@@ -72,20 +72,6 @@ var tiles2 = []Tile{
 
 var tiles = []Tile{
 	{
-		North: "LGoat",
-		East:  "LHouse",
-		South: "RMouse",
-		West:  "LTree",
-		ID:    1,
-	},
-	{
-		North: "LTree",
-		East:  "LHouse",
-		South: "LMouse",
-		West:  "RGoat",
-		ID:    2,
-	},
-	{
 		North: "RGoat",
 		East:  "LHouse",
 		South: "RTree",
@@ -107,13 +93,6 @@ var tiles = []Tile{
 		ID:    5,
 	},
 	{
-		North: "LTree",
-		East:  "LGoat",
-		South: "LHouse",
-		West:  "RMouse",
-		ID:    6,
-	},
-	{
 		North: "RTree",
 		East:  "RGoat",
 		South: "RHouse",
@@ -133,6 +112,28 @@ var tiles = []Tile{
 		South: "LHouse",
 		West:  "RMouse",
 		ID:    9,
+	},
+	// I know that these are not valid start tiles, so i moved them to the end.
+	{
+		North: "LGoat",
+		East:  "LHouse",
+		South: "RMouse",
+		West:  "LTree",
+		ID:    1,
+	},
+	{
+		North: "LTree",
+		East:  "LHouse",
+		South: "LMouse",
+		West:  "RGoat",
+		ID:    2,
+	},
+	{
+		North: "LTree",
+		East:  "LGoat",
+		South: "LHouse",
+		West:  "RMouse",
+		ID:    6,
 	},
 }
 
@@ -423,14 +424,13 @@ func main() {
 	args := os.Args[1:]
 	printDetails, _ = strconv.Atoi(args[0])
 	maxAttempts, _ := strconv.Atoi(args[1])
-	// firstTileIndex, _ := strconv.Atoi(args[2])
+	firstTileID, _ := strconv.Atoi(args[2])
 	// get a list of all tile ids
 	allTileIDs := []int{}
 	for _, tile := range tiles {
 		allTileIDs = append(allTileIDs, tile.ID)
 	}
 	// Set Up Initial Variables
-	position := 0                         // position of tile (will calculate coordinates from this later)
 	attemptNumber := 0                    // tracks.. number of attempts
 	isRetry := false                      // flag to tell if we are retrying a specific position
 	placedTiles := []Tile{}               // array of tiles (in order, can calculate coorindates later)
@@ -440,6 +440,11 @@ func main() {
 	firstTileRotationNumber := 0          // tracks which rotation number the first tile is on
 	// currentTileRotationNumber := 0
 	maxPositionNumber := 0 // just bc im interested..
+
+	// place the first tile
+	placedTiles = append(placedTiles, getTileByID(firstTileID))
+	availableTilesByPosition = append(availableTilesByPosition, getAvailableTiles(placedTiles, allTileIDs))
+	position := 1 // position of tile (will calculate coordinates from this later)
 
 	fmt.Printf("# Attempts: %v\n", maxAttempts)
 	for position < len(allTileIDs) {
@@ -451,7 +456,7 @@ func main() {
 		if attemptNumber > maxAttempts {
 			break // hit max attempts, so stop
 		}
-		print(fmt.Sprintf("\nPosition: %v\tAttempt: %v/%v\tisRetry: %v\n", position, attemptNumber, maxAttempts, isRetry), 0)
+		print(fmt.Sprintf("\nPosition: %v\tAttempt: %v/%v\tisRetry: %v\tfirstTileRotationNumber: %v\n", position, attemptNumber, maxAttempts, isRetry, firstTileRotationNumber), 0)
 		// Get position's available tile IDs
 		print(fmt.Sprintf("\tavailableTilesByPosition: %v\n", availableTilesByPosition), 1)
 		if len(availableTilesByPosition) < position || !isRetry { // available tiles will be from the pool of all tiles
@@ -481,16 +486,20 @@ func main() {
 			if position > 1 { // simple retry, just go back a tile
 				position -= 1
 			} else if position == 1 { // none of the first tiles worked, so need to rotate or swap first tile
-				isRetry = false
 				if firstTileRotationNumber <= 3 { // rotate the first tile
+					isRetry = false
 					firstTileRotationNumber += 1
 					print("\tRotating first tile\n", 1)
 					placedTiles[0] = rotateTile(placedTiles[0])
+					availableTilesByPosition[position] = getAvailableTiles(placedTiles, allTileIDs)
 				} else { // swap first tile out
+					isRetry = true
 					firstTileRotationNumber = 0
-					print(fmt.Sprintf("First tile invalid! Placed tiles before replacement: %v", getTileIDs(placedTiles)), 2)
-					placedTiles, availableTilesByPosition, isRetry = checkTilesForPosition(position, placedTiles, availableTilesForPosition, availableTilesByPosition, isRetry)
+					position = 0
+					print(fmt.Sprintf("First tile invalid! Placed tiles before replacement: %v\n", getTileIDs(placedTiles)), 2)
+					placedTiles = removePlacedTile(placedTiles, position)
 				}
+				print(fmt.Sprintf("\t--->Placed TilesD: %v<---\n", getTileIDs(placedTiles)), 0)
 			} else {
 				// tile 0 doesnt work, we have issues.
 				fmt.Printf("NO VALID PUZZLE")
