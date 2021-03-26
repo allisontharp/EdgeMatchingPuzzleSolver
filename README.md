@@ -34,7 +34,7 @@ Example
 ## Output
 If it was able to find a solution (for a 3x3, it is generally between 10k and 20k attempts), it will output as follows.  It describes the tile ids in order as well as the orientation (1 rotation means it is in the starting position, 4 rotations means it was rotated once counter clockwise).
 
-![example-output](https://raw.githubusercontent.com/allisontharp/EdgeMatchingPuzzleSolver/SinglePlacementAttempt/images/ExampleOutput.png)
+<img src="https://raw.githubusercontent.com/allisontharp/EdgeMatchingPuzzleSolver/main/images/ExampleOutput.png height="300"/>
 
 ## To Do
 - Allow for other sizes (not just 3x3)
