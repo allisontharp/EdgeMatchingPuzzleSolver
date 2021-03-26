@@ -173,7 +173,6 @@ func pprintTiles(tiles []Tile) {
 		middleRow := ""
 		bottomRow := ""
 		for x <= width {
-
 			tile := tiles[i]
 			topRow += fmt.Sprintf("|%v%v%v|", topSpaces, tile.North[0:descLength], topSpaces)
 			middleRow += fmt.Sprintf("|%v%v%v|", tile.West[0:descLength], middleSpaces, tile.East[0:descLength])
@@ -305,9 +304,17 @@ func checkTileMatch(currentTile Tile, position int, placedTiles []Tile, rotation
 	}
 	// first tile doesnt match on anything
 	if position == 0 {
-		if rotationNumber <= 3 {
+		if rotationNumber <= 4 {
 			fmt.Printf("\n\tRotating first tile. \n\n")
+			currentRotation := 1
+			print(fmt.Sprintf("\t\tBefore Rotation:: %v\n", currentTile), 2)
+			for currentRotation < rotationNumber {
+				currentTile = rotateTile(currentTile)
+				currentRotation += 1
+			}
 			currentTile = rotateTile(currentTile)
+			print(fmt.Sprintf("\t\tAfter Rotation:: %v\n", currentTile), 2)
+
 		} else {
 			fmt.Printf("\n\tReplacing first tile. \n\n")
 			rotationNumber = 1
@@ -405,9 +412,13 @@ func rotateFirstTile(tile Tile) (placedTiles []Tile) {
 func checkTilesForPosition(position int, placedTiles []Tile, availableTilesForPosition []int, availableTilesByPosition [][]int, isRetry bool, rotationsByPosition []int) ([]Tile, [][]int, bool, []int) {
 	print(fmt.Sprintf("\tAvailableTiles before pick: %v\n", availableTilesForPosition), 3)
 	positionsPossibleTiles := availableTilesForPosition
-
+	currentTile := Tile{}
 	for testTileNumber, testTile := range availableTilesForPosition { // try each available tile until it finds one that matches
-		currentTile := getTileByID(testTile)
+		if position == 0 && rotationsByPosition[0] <= 3 && len(placedTiles) > 0 {
+			currentTile = placedTiles[0]
+		} else {
+			currentTile = getTileByID(testTile)
+		}
 		print(fmt.Sprintf("\tTesting Tile: %v\n", currentTile), 3)
 		print(fmt.Sprintf("\trotationsByPosition: %v\n", rotationsByPosition), 3)
 
@@ -425,19 +436,26 @@ func checkTilesForPosition(position int, placedTiles []Tile, availableTilesForPo
 			isRetry = false
 			break // break out of the loop of position's available tiles
 		} else { // tile didnt work, so remove it from position's available tiles
+			if rotationNumber == 4 {
+				rotationNumber = 1
+			}
 			print(fmt.Sprintf("\tTileID %v did not work, removing..\n", currentTile.ID), 3)
 
 			positionsPossibleTiles = removeAvailableTile(positionsPossibleTiles, currentTile.ID)
 
+			print(fmt.Sprintf("\t\tlen(availableTilesByPosition): %v\n", len(availableTilesByPosition)), 2)
+
 			// add or update the array of all available tiles
 			if len(availableTilesByPosition) < position+1 || len(availableTilesByPosition) == 0 {
 				availableTilesByPosition = append(availableTilesByPosition, positionsPossibleTiles)
-				rotationsByPosition = append(rotationsByPosition, rotationNumber)
 			} else {
 				availableTilesByPosition[position] = positionsPossibleTiles
 				rotationsByPosition[position] = rotationNumber
 			}
+
 			print(fmt.Sprintf("\t\tPosition's available tiles after removal: %v\n", positionsPossibleTiles), 2)
+			print(fmt.Sprintf("\t\tPosition's rotations: %v\n", rotationsByPosition[position]), 2)
+
 		}
 		if testTileNumber == len(availableTilesForPosition)-1 && position > 0 {
 			print(fmt.Sprintf("\tNo tiles worked.  Retrying previous position. \n"), 3)
@@ -493,6 +511,10 @@ func main() {
 			maxPositionNumber = position
 		}
 
+		// if len(placedTiles) >= 2 && placedTiles[1].ID == 8 { //} && len(placedTiles) > 1 && placedTiles[1].ID == 4 {
+		// 	break
+		// }
+
 		// only show details for the last 10 records (prints slow it down)
 		if attemptNumber < maxAttempts-10 {
 			printDetails = 0
@@ -520,6 +542,9 @@ func main() {
 			poolOfAvailableTiles = availableTilesByPosition[position]
 
 			// remove current tile from the placed tiles
+			// if position == 0 && rotationsByPosition[0] <= 3 && len(placedTiles) > 0 {
+			// 	placedTiles[0] = rotateTile(placedTiles[0])
+			// } else
 			if len(placedTiles) == position+1 {
 				placedTiles = removePlacedTile(placedTiles, position)
 			}
@@ -575,6 +600,7 @@ func main() {
 		if !isRetry {
 			position += 1
 		} else {
+
 			positionsPossibleTiles := availableTilesByPosition[position]
 			if len(positionsPossibleTiles) > 0 {
 				position += 0 // retry position just with different tile
