@@ -1,0 +1,63 @@
+[{
+    "North": "LGoat",
+    "East":  "LHouse",
+    "South": "RMouse",
+    "West":  "LTree",
+    "ID":    1
+},
+{
+    "North": "LTree",
+    "East":  "LHouse",
+    "South": "LMouse",
+    "West":  "RGoat",
+    "ID":    2
+},
+{
+    "North": "RGoat",
+    "East":  "LHouse",
+    "South": "RTree",
+    "West":  "RMouse",
+    "ID":    3
+},
+{
+    "North": "RHouse",
+    "East":  "LGoat",
+    "South": "RTree",
+    "West":  "RGoat",
+    "ID":    4
+},
+{
+    "North": "LTree",
+    "East":  "LMouse",
+    "South": "LHouse",
+    "West":  "RGoat",
+    "ID":    5
+},
+{
+    "North": "LTree",
+    "East":  "LGoat",
+    "South": "LHouse",
+    "West":  "RMouse",
+    "ID":    6
+},
+{
+    "North": "RTree",
+    "East":  "RGoat",
+    "South": "RHouse",
+    "West":  "LMouse",
+    "ID":    7
+},
+{
+    "North": "RHouse",
+    "East":  "RTree",
+    "South": "LGoat",
+    "West":  "RMouse",
+    "ID":    8
+},
+{
+    "North": "LTree",
+    "East":  "LMouse",
+    "South": "LHouse",
+    "West":  "RMouse",
+    "ID":    9
+}]

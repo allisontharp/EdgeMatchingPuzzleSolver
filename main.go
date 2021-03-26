@@ -1,6 +1,5 @@
 /*
 	TODO:
-		- Read tiles from file (json)
 		- Allow for other sizes (not just 3x3)
 		- Allow for trying to find multiple solutions (besides the 4 rotations of the same solution)
 		- Make command line arguments better (flags)
@@ -9,8 +8,11 @@
 package main
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
+	"io/ioutil"
+	"log"
 	"os"
 	"strconv"
 	"strings"
@@ -30,6 +32,7 @@ var maxPPrintWidth int = 30
 var printDetails = 0
 var width = 3
 var height = 3
+var tiles []Tile
 
 type TileSide struct {
 	Direction   string
@@ -42,101 +45,6 @@ type Tile struct {
 	South string
 	West  string
 	ID    int
-}
-
-var tiles2 = []Tile{
-	{
-		North: "LGoat",
-		East:  "LGoat",
-		South: "LBeetle",
-		West:  "LAnt",
-		ID:    1,
-	}, {
-		North: "LGoat",
-		East:  "LGoat",
-		South: "RButterfly",
-		West:  "RBeetle",
-		ID:    2,
-	}, {
-		North: "RAnt",
-		East:  "RGrasshopper",
-		South: "LGoat",
-		West:  "LGoat",
-		ID:    3,
-	}, {
-		North: "LButterfly",
-		East:  "LGoat",
-		South: "LGoat",
-		West:  "LGrasshopper",
-		ID:    4,
-	},
-}
-
-// i think 1, 4, 6 are not possible starters
-var tiles = []Tile{
-	{
-		North: "LGoat",
-		East:  "LHouse",
-		South: "RMouse",
-		West:  "LTree",
-		ID:    1,
-	},
-	{
-		North: "LTree",
-		East:  "LHouse",
-		South: "LMouse",
-		West:  "RGoat",
-		ID:    2,
-	},
-	{
-		North: "RGoat",
-		East:  "LHouse",
-		South: "RTree",
-		West:  "RMouse",
-		ID:    3,
-	},
-	{
-		North: "RHouse",
-		East:  "LGoat",
-		South: "RTree",
-		West:  "RGoat",
-		ID:    4,
-	},
-	{
-		North: "LTree",
-		East:  "LMouse",
-		South: "LHouse",
-		West:  "RGoat",
-		ID:    5,
-	},
-	{
-		North: "LTree",
-		East:  "LGoat",
-		South: "LHouse",
-		West:  "RMouse",
-		ID:    6,
-	},
-	{
-		North: "RTree",
-		East:  "RGoat",
-		South: "RHouse",
-		West:  "LMouse",
-		ID:    7,
-	},
-	{
-		North: "RHouse",
-		East:  "RTree",
-		South: "LGoat",
-		West:  "RMouse",
-		ID:    8,
-	},
-	{
-		North: "LTree",
-		East:  "LMouse",
-		South: "LHouse",
-		West:  "RMouse",
-		ID:    9,
-	},
 }
 
 // when you move on to a new position, you can add back in all of the tiles that are currently available to this.
@@ -472,6 +380,17 @@ func checkTilesForPosition(position int, placedTiles []Tile, availableTilesForPo
 
 func main() {
 	startTime := time.Now()
+
+	// Read contents of the inputPuzzle.json
+	data, err := ioutil.ReadFile("inputPuzzle.json")
+	if err != nil {
+		log.Fatal("Error when opening file: ", err)
+	}
+	err = json.Unmarshal(data, &tiles)
+	if err != nil {
+		log.Fatal("Error during Unmarshal(): ", err)
+	}
+
 	// Get commandline arguments
 	args := os.Args[1:]
 	printDetails, _ = strconv.Atoi(args[0])
