@@ -1,10 +1,3 @@
-/*
-	TODO:
-		- Allow for other sizes (not just 3x3)
-		- Allow for trying to find multiple solutions (besides the 4 rotations of the same solution)
-		- Make command line arguments better (flags)
-*/
-
 package main
 
 import (
