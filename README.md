@@ -4,7 +4,7 @@ This is an edge matching puzzle solver written in Go.
 **Edge Matching Puzzles**
 An edge matching puzzle is a type of tiling puzzle involving tiling an area with (typically regular) polygons who edges are distinguished with colors or patterns in such a way that the edges match adjacent puzzles. [1](https://en.wikipedia.org/wiki/Edge-matching_puzzle)  
 
-<img src="https://raw.githubusercontent.com/allisontharp/EdgeMatchingPuzzleSolver/SinglePlacementAttempt/images/ExamplePuzzle.png" width="100" height="100"/>
+<img src="https://raw.githubusercontent.com/allisontharp/EdgeMatchingPuzzleSolver/SinglePlacementAttempt/images/ExamplePuzzle.png" height="500"/>
 ## Input
 Update the inputPuzzle.json file with the details of the puzzle. 
 
